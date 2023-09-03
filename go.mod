@@ -1,9 +1,9 @@
 module github.com/s0ders/snippetbox
 
-go 1.20
+go 1.21
 
 require (
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/julienschmidt/httprouter v1.3.0 // indirect
-	github.com/justinas/alice v1.2.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.1
+	github.com/julienschmidt/httprouter v1.3.0
+	github.com/justinas/alice v1.2.0
 )
