@@ -169,15 +169,6 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-
-	if app.sessionManager.Exists(r.Context(), "authenticatedUserID") {
-
-		app.sessionManager.Put(r.Context(), "flash", "You are already logged in")
-
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
 	flash := app.sessionManager.PopString(r.Context(), "flash")
 
 	data := app.newTemplateData(r)
@@ -235,13 +226,6 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	err := app.sessionManager.RenewToken(r.Context())
 	if err != nil {
 		app.serverError(w, err)
-		return
-	}
-
-	if !app.sessionManager.Exists(r.Context(), "authenticatedUserID") {
-		app.sessionManager.Put(r.Context(), "flash", "You must be logged in to logout")
-
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
 
