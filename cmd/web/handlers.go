@@ -15,24 +15,23 @@ type snippetCreateForm struct {
 	Title               string `form:"title"`
 	Content             string `form:"content"`
 	Expires             int    `form:"expires"`
-	validator.Validator `form:"-"`
+	validator.Validator `       form:"-"`
 }
 
 type userSignupForm struct {
 	Name                string `form:"name"`
 	Email               string `form:"email"`
 	Password            string `form:"password"`
-	validator.Validator `form:"-"`
+	validator.Validator `       form:"-"`
 }
 
 type userLoginForm struct {
 	Email               string `form:"email"`
 	Password            string `form:"password"`
-	validator.Validator `form:"-"`
+	validator.Validator `       form:"-"`
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -49,7 +48,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-
 	params := httprouter.ParamsFromContext(r.Context())
 
 	id, err := strconv.Atoi(params.ByName("id"))
@@ -60,7 +58,6 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	snippet, err := app.snippets.Get(id)
-
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -99,9 +96,17 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	}
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
-	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
+	form.CheckField(
+		validator.MaxChars(form.Title, 100),
+		"title",
+		"This field cannot be more than 100 characters long",
+	)
 	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
-	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
+	form.CheckField(
+		validator.PermittedInt(form.Expires, 1, 7, 365),
+		"expires",
+		"This field must equal 1, 7 or 365",
+	)
 
 	if !form.Valid() {
 		data := app.newTemplateData(r)
@@ -139,9 +144,17 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 
 	form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
 	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
-	form.CheckField(validator.ValidEmail(form.Email), "email", "This field must be a valid email address")
+	form.CheckField(
+		validator.ValidEmail(form.Email),
+		"email",
+		"This field must be a valid email address",
+	)
 	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
-	form.CheckField(validator.MinChars(form.Password, 8), "password", "This field must be at least 8 characters long")
+	form.CheckField(
+		validator.MinChars(form.Password, 8),
+		"password",
+		"This field must be at least 8 characters long",
+	)
 
 	if !form.Valid() {
 		data := app.newTemplateData(r)
@@ -233,4 +246,8 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("ok"))
 }

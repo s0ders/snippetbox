@@ -18,6 +18,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// application struct allows for dependency injection
 type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
@@ -29,9 +30,16 @@ type application struct {
 }
 
 func main() {
-
-	addr := flag.String("addr", "127.0.0.1:8080", "The address on which the HTTP server will listen")
-	dsn := flag.String("dsn", "root:password@tcp(localhost:3306)/snippetbox?parseTime=true", "MySQL data source name")
+	addr := flag.String(
+		"addr",
+		"127.0.0.1:8080",
+		"The address on which the HTTP server will listen",
+	)
+	dsn := flag.String(
+		"dsn",
+		"root:password@tcp(localhost:3306)/snippetbox?parseTime=true",
+		"MySQL data source name",
+	)
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate)

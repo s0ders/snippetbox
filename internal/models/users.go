@@ -33,7 +33,7 @@ func (m *UserModel) Insert(name, email, password string) error {
 	_, err = m.DB.Exec(stmt, name, email, hashPassword)
 	if err != nil {
 		var mySQLError *mysql.MySQLError
-		
+
 		if errors.As(err, &mySQLError) {
 			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
 				return ErrDuplicateEmail
@@ -73,5 +73,10 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 }
 
 func (m *UserModel) Exists(id int) (bool, error) {
-	return false, nil
+	var exists bool
+
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id = ?)"
+
+	err := m.DB.QueryRow(stmt, id).Scan(&exists)
+	return exists, err
 }

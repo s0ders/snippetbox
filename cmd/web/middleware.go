@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", 
+		w.Header().Set("Content-Security-Policy",
 			"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
 
 		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
@@ -28,7 +29,6 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
@@ -48,7 +48,29 @@ func (app *application) requireAuth(next http.Handler) http.Handler {
 		}
 
 		w.Header().Add("Cache-Control", "no-store")
-		
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		exists, err := app.users.Exists(id)
+		if err != nil {
+			app.serverError(w, err)
+		}
+
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r.WithContext(ctx)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
